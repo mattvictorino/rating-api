@@ -13,17 +13,27 @@ jobs:
 
   # 🏗 BUILD
   build:
-    name: Build Application
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Download dependencies
         run: go mod download
@@ -33,18 +43,28 @@ jobs:
 
   # 🔎 LINT
   lint:
-    name: Lint code
+    name: Lint
     runs-on: ubuntu-latest
-    needs: build   # só roda se o build passar
+    needs: build
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Download dependencies
         run: go mod download
@@ -54,23 +74,33 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
           | sh -s -- -b $(go env GOPATH)/bin v1.56.2
 
-      - name: Run lint
+      - name: Run linter
         run: golangci-lint run ./...
 
   # 🧪 TESTS
   test:
-    name: Run Tests
+    name: Tests
     runs-on: ubuntu-latest
-    needs: build   # só testa se compilar
+    needs: build
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Download dependencies
         run: go mod download
