@@ -1,0 +1,44 @@
+
+name: Automated Tests
+
+on: pull_request
+    
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup go 1.25
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      # 🔥 evita o erro "no such tool covdata"
+      - name: Disable go toolchain auto-download
+        run: go env -w GOTOOLCHAIN=local
+
+      - name: Cache go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        run: go test ./... -v -race -coverprofile=coverage.out
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
