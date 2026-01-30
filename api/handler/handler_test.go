@@ -19,7 +19,7 @@ func TestGet(t *testing.T) {
 	type TestGetSetup struct {
 		ctx     echo.Context
 		rec     *httptest.ResponseRecorder
-		service *ports.RatingMock
+		service *ports.RatingServiceMock
 	}
 
 	type TestGetStruct struct {
@@ -32,15 +32,15 @@ func TestGet(t *testing.T) {
 			setup: func() TestGetSetup {
 				e := echo.New()
 
-				req := httptest.NewRequest(http.MethodGet, "/rating/1", nil)
+				req := httptest.NewRequest(http.MethodGet, "/ratings/1", nil)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
 
 				ctx.SetParamNames("id")
 				ctx.SetParamValues("1")
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("GetByID", "1").Return(domain.Rating{}, nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("GetByID", ctx.Request().Context(), "1").Return(domain.Rating{}, nil)
 
 				return TestGetSetup{
 					ctx:     ctx,
@@ -56,15 +56,15 @@ func TestGet(t *testing.T) {
 			setup: func() TestGetSetup {
 				e := echo.New()
 
-				req := httptest.NewRequest(http.MethodGet, "/rating/100", nil)
+				req := httptest.NewRequest(http.MethodGet, "/ratings/100", nil)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
 
 				ctx.SetParamNames("id")
 				ctx.SetParamValues("100")
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("GetByID", "100").Return(domain.Rating{}, domain.ErrNotFound)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("GetByID", ctx.Request().Context(), "100").Return(domain.Rating{}, domain.ErrNotFound)
 
 				return TestGetSetup{
 					ctx:     ctx,
@@ -80,15 +80,15 @@ func TestGet(t *testing.T) {
 			setup: func() TestGetSetup {
 				e := echo.New()
 
-				req := httptest.NewRequest(http.MethodGet, "/rating/100", nil)
+				req := httptest.NewRequest(http.MethodGet, "/ratings/100", nil)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
 
 				ctx.SetParamNames("id")
 				ctx.SetParamValues("100")
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("GetByID", "100").Return(domain.Rating{}, errors.New("some error"))
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("GetByID", ctx.Request().Context(), "100").Return(domain.Rating{}, errors.New("some error"))
 
 				return TestGetSetup{
 					ctx:     ctx,
@@ -119,7 +119,7 @@ func TestPost(t *testing.T) {
 	type TestPostSetup struct {
 		ctx     echo.Context
 		rec     *httptest.ResponseRecorder
-		service *ports.RatingMock
+		service *ports.RatingServiceMock
 		rating  domain.Rating
 	}
 
@@ -134,7 +134,7 @@ func TestPost(t *testing.T) {
 				e := echo.New()
 
 				body := `{"product_id":"44ad1de9-a6ad-4f7e-b6fc-09ec9adcf81b", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPost, "/rating", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPost, "/ratings", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -146,8 +146,8 @@ func TestPost(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Insert", ratingMock).Return(nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Insert", ctx.Request().Context(), ratingMock).Return(nil)
 
 				return TestPostSetup{
 					ctx:     ctx,
@@ -165,7 +165,7 @@ func TestPost(t *testing.T) {
 				e := echo.New()
 
 				body := `{"product_id":"", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPost, "/rating", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPost, "/ratings", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -177,8 +177,8 @@ func TestPost(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Insert", ratingMock).Return(nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Insert", ctx.Request().Context(), ratingMock).Return(nil)
 
 				return TestPostSetup{
 					ctx:     ctx,
@@ -196,7 +196,7 @@ func TestPost(t *testing.T) {
 				e := echo.New()
 
 				body := `{"product_id":"44ad1de9-a6ad-4f7e-b6fc-09ec9adcf81b", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPost, "/rating", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPost, "/ratings", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -208,8 +208,8 @@ func TestPost(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Insert", ratingMock).Return(errors.New("some error"))
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Insert", ctx.Request().Context(), ratingMock).Return(errors.New("some error"))
 
 				return TestPostSetup{
 					ctx:     ctx,
@@ -241,7 +241,7 @@ func TestPut(t *testing.T) {
 	type TestPutSetup struct {
 		ctx     echo.Context
 		rec     *httptest.ResponseRecorder
-		service *ports.RatingMock
+		service *ports.RatingServiceMock
 		rating  domain.Rating
 	}
 
@@ -257,7 +257,7 @@ func TestPut(t *testing.T) {
 				e.Validator = validator.NewCustomValidator()
 
 				body := `{"product_id":"44ad1de9-a6ad-4f7e-b6fc-09ec9adcf81b", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPut, "/rating/1", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPut, "/ratings/1", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -271,8 +271,8 @@ func TestPut(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Update", ratingMock).Return(nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Update", ctx.Request().Context(), ratingMock).Return(nil)
 
 				return TestPutSetup{
 					ctx:     ctx,
@@ -291,7 +291,7 @@ func TestPut(t *testing.T) {
 				e.Validator = validator.NewCustomValidator()
 
 				body := `{"product_id":"", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPut, "/rating/1", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPut, "/ratings/1", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -305,8 +305,8 @@ func TestPut(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Update", ratingMock).Return(nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Update", ctx.Request().Context(), ratingMock).Return(nil)
 
 				return TestPutSetup{
 					ctx:     ctx,
@@ -325,7 +325,7 @@ func TestPut(t *testing.T) {
 				e.Validator = validator.NewCustomValidator()
 
 				body := `{"product_id":"44ad1de9-a6ad-4f7e-b6fc-09ec9adcf81b", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPut, "/rating/100", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPut, "/ratings/100", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -339,8 +339,8 @@ func TestPut(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Update", ratingMock).Return(domain.ErrNotFound)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Update", ctx.Request().Context(), ratingMock).Return(domain.ErrNotFound)
 
 				return TestPutSetup{
 					ctx:     ctx,
@@ -359,7 +359,7 @@ func TestPut(t *testing.T) {
 				e.Validator = validator.NewCustomValidator()
 
 				body := `{"product_id":"44ad1de9-a6ad-4f7e-b6fc-09ec9adcf81b", "type":"five_stars", "value": 1}`
-				req := httptest.NewRequest(http.MethodPut, "/rating/1", strings.NewReader(body))
+				req := httptest.NewRequest(http.MethodPut, "/ratings/1", strings.NewReader(body))
 				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
@@ -373,8 +373,8 @@ func TestPut(t *testing.T) {
 					Value:     1,
 				}
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Update", ratingMock).Return(errors.New("some error"))
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Update", ctx.Request().Context(), ratingMock).Return(errors.New("some error"))
 
 				return TestPutSetup{
 					ctx:     ctx,
@@ -406,7 +406,7 @@ func TestDelete(t *testing.T) {
 	type TestDeleteSetup struct {
 		ctx     echo.Context
 		rec     *httptest.ResponseRecorder
-		service *ports.RatingMock
+		service *ports.RatingServiceMock
 	}
 
 	type TestDeleteStruct struct {
@@ -419,15 +419,15 @@ func TestDelete(t *testing.T) {
 			setup: func() TestDeleteSetup {
 				e := echo.New()
 
-				req := httptest.NewRequest(http.MethodDelete, "/rating/1", nil)
+				req := httptest.NewRequest(http.MethodDelete, "/ratings/1", nil)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
 
 				ctx.SetParamNames("id")
 				ctx.SetParamValues("1")
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Delete", "1").Return(nil)
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Delete", ctx.Request().Context(), "1").Return(nil)
 
 				return TestDeleteSetup{
 					ctx:     ctx,
@@ -443,15 +443,15 @@ func TestDelete(t *testing.T) {
 			setup: func() TestDeleteSetup {
 				e := echo.New()
 
-				req := httptest.NewRequest(http.MethodDelete, "/rating/100", nil)
+				req := httptest.NewRequest(http.MethodDelete, "/ratings/100", nil)
 				rec := httptest.NewRecorder()
 				ctx := e.NewContext(req, rec)
 
 				ctx.SetParamNames("id")
 				ctx.SetParamValues("100")
 
-				serviceMock := new(ports.RatingMock)
-				serviceMock.On("Delete", "100").Return(errors.New("some error"))
+				serviceMock := new(ports.RatingServiceMock)
+				serviceMock.On("Delete", ctx.Request().Context(), "100").Return(errors.New("some error"))
 
 				return TestDeleteSetup{
 					ctx:     ctx,
