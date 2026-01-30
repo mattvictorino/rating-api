@@ -4,6 +4,7 @@ import "time"
 
 type Rating struct {
 	ID         string
+	UserID     string
 	ProductID  string
 	Type       string
 	Value      int

@@ -12,6 +12,7 @@ func InitConfig() {
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
 	viper.SetDefault("server.port", 8888)
+
+	initMongoConfig()
 }

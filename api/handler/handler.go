@@ -11,17 +11,17 @@ import (
 )
 
 type Handler struct {
-	service ports.Rating
+	service ports.RatingService
 }
 
-func NewHandler(service ports.Rating) Handler {
+func NewHandler(service ports.RatingService) Handler {
 	return Handler{
 		service: service,
 	}
 }
 
 func (h Handler) Get(c echo.Context) error {
-	rating, err := h.service.GetByID(c.Param("id"))
+	rating, err := h.service.GetByID(c.Request().Context(), c.Param("id"))
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return c.NoContent(http.StatusNotFound)
@@ -49,7 +49,7 @@ func (h Handler) Post(c echo.Context) error {
 		Value:     req.Value,
 	}
 
-	if err := h.service.Insert(rating); err != nil {
+	if err := h.service.Insert(c.Request().Context(), rating); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -73,7 +73,7 @@ func (h Handler) Put(c echo.Context) error {
 		Value:     req.Value,
 	}
 
-	if err := h.service.Update(rating); err != nil {
+	if err := h.service.Update(c.Request().Context(), rating); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return c.NoContent(http.StatusNotFound)
 		}
@@ -85,7 +85,7 @@ func (h Handler) Put(c echo.Context) error {
 }
 
 func (h Handler) Delete(c echo.Context) error {
-	if err := h.service.Delete(c.Param("id")); err != nil {
+	if err := h.service.Delete(c.Request().Context(), c.Param("id")); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
